@@ -1,0 +1,1 @@
+/usr/bin/cc     CMakeFiles/TProxy.dir/main.c.o CMakeFiles/TProxy.dir/server.c.o CMakeFiles/TProxy.dir/balance.c.o CMakeFiles/TProxy.dir/conf.c.o  -o TProxy  -L/usr/local/lib  -ljson-c -Wl,-rpath,/usr/local/lib 

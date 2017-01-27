@@ -1,0 +1,11 @@
+Compiling the C compiler identification source file "CMakeCCompilerId.c" failed.
+Compiler: /usr/bin/cc 
+Build flags: -fopenmp
+Id flags: 
+
+The output was:
+1
+/usr/bin/ld: cannot find -lomp
+cc: error: linker command failed with exit code 1 (use -v to see invocation)
+
+
