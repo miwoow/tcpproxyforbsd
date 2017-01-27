@@ -1,3 +1,0 @@
-/usr/home/xud/me/tcpproxy/src/CMakeFiles/edit_cache.dir
-/usr/home/xud/me/tcpproxy/src/CMakeFiles/rebuild_cache.dir
-/usr/home/xud/me/tcpproxy/src/CMakeFiles/TProxy.dir
