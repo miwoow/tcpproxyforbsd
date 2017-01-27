@@ -26,7 +26,6 @@ int balance_sel_server(int kq, struct client *cli)
         printf("connect error.\n");
         return -1;
     }
-    // send client real ip.
 
     cli->upstream_fd = sk;
 
@@ -36,6 +35,7 @@ int balance_sel_server(int kq, struct client *cli)
         return -1;
     }
 
+    // send client real ip to upstream.
     ret = report_real_client_ip(cli);
     return ret;
 }
