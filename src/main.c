@@ -43,7 +43,8 @@ int handle_accept(int kq, int conn_size)
 
 int handle_receive(int kq, int sock, int avail_bytes, void *udata)
 {
-    struct client *cli = (struct client *)udata;
+    struct ev_data *edata = (struct ev_data *)udata;
+    struct client *cli = edata->cli;
     int ret = 0;
 
     if (avail_bytes == 0) {
@@ -54,15 +55,18 @@ int handle_receive(int kq, int sock, int avail_bytes, void *udata)
     int bytes = recv(sock, buf_, avail_bytes, 0);
     char *pos = NULL;
     int len = 0;
-    if (sock == cli->fd) {
+    if (sock == cli->fd && cli->upstream_fd != -1) {
         // data from client
-        if (bytes == 0 || bytes == -1) {
+        if (bytes <= 0) {
             printf("%s:%d: client close or recv failed.\n", inet_ntoa(cli->client_addr), ntohs(cli->port));
-            clear_client(cli);
+perror("ERROR");
+            clear_client(kq, cli);
+            free(edata);
+            edata = NULL;
             cli = NULL;
             return -1;
         }
-        printf("%s:%d: %s", inet_ntoa(cli->client_addr), ntohs(cli->port), buf_);
+        //printf("%s:%d: %s\n", inet_ntoa(cli->client_addr), ntohs(cli->port), buf_);
 
         if (avail_bytes == MAX_RECV_BUFF) {
             avail_bytes = bytes;
@@ -79,9 +83,20 @@ int handle_receive(int kq, int sock, int avail_bytes, void *udata)
         pos = &buf_[0];
         len = avail_bytes;
         while(1) {
+            //printf("send to upstream\n");
             ret = send(cli->upstream_fd, pos, len, 0);
+            if (ret == 0) {
+                clear_client(kq, cli);
+            free(edata);
+            edata = NULL;
+                cli = NULL;
+                printf("upstream close socket\n");
+                return -1;
+            }
             if (ret < 0) {
-                clear_client(cli);
+                clear_client(kq, cli);
+            free(edata);
+            edata = NULL;
                 cli = NULL;
                 printf("send to upstream failed\n");
                 return -1;
@@ -94,15 +109,18 @@ int handle_receive(int kq, int sock, int avail_bytes, void *udata)
                 break;
             }
         }
-    } else if (sock == cli->upstream_fd) {
+    } else if (sock == cli->upstream_fd && cli->fd != -1) {
         // data from upstream
-        if (bytes == 0 || bytes == -1) {
+        if (bytes <= 0) {
             printf("%s:%d: upstream close or recv failed.\n", inet_ntoa(cli->upstream_addr), cli->upstream_port);
-            clear_client(cli);
+perror("ERROR");
+            clear_client(kq, cli);
+            free(edata);
+            edata = NULL;
             cli = NULL;
             return -1;
         }
-        printf("%s:%d: %s", inet_ntoa(cli->client_addr), ntohs(cli->port), buf_);
+        //printf("%s:%d: %s\n", inet_ntoa(cli->client_addr), ntohs(cli->port), buf_);
 
         if (avail_bytes == MAX_RECV_BUFF) {
             avail_bytes = bytes;
@@ -111,10 +129,21 @@ int handle_receive(int kq, int sock, int avail_bytes, void *udata)
         pos = &buf_[0];
         len = avail_bytes;
         while(1) {
+            //printf("send to client\n");
             ret = send(cli->fd, pos, len, 0);
+            if (ret == 0) {
+                printf("client close socket\n");
+                clear_client(kq, cli);
+            free(edata);
+            edata = NULL;
+                cli = NULL;
+                return -1;
+            }
             if (ret < 0) {
                 printf("send to client failed\n");
-                clear_client(cli);
+                clear_client(kq, cli);
+            free(edata);
+            edata = NULL;
                 cli = NULL;
                 return -1;
             }
@@ -134,8 +163,8 @@ int handle_receive(int kq, int sock, int avail_bytes, void *udata)
 #ifdef __linux__
 int handle_epoll_event(int kq, void *udata)
 {
-    struct client *cli = (struct client *)udata;
-    int sock = cli->fd;
+    struct ev_data *edata = (struct ev_data *)udata;
+    int sock = edata->ev_fd;
     int ret = 0;
 
     if (sock == listen_socket) {

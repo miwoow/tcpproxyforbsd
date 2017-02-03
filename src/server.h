@@ -29,10 +29,16 @@ struct client {
     int upstream_port;  // upstream port in host byte order.
 };
 
+// 因为Linux无法保存两个event参数，所以这里包裹一层来解决这个问题
+struct ev_data {
+    int ev_fd;
+    struct client *cli;
+};
+
 
 int server_start(int *sk, char *ip, int port);
 int regist_sock(int kq, int fd, struct client *cli);
-int clear_client(struct client *cli);
+int clear_client(int kq, struct client *cli);
 
 
 #endif

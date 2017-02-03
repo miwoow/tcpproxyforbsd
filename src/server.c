@@ -45,8 +45,13 @@ int regist_sock(int kq, int fd, struct client *cli)
         cli->client_addr = peer_addr.sin_addr;
         cli->port = peer_addr.sin_port;
     }
+
+    struct ev_data *m_ev_data = (struct ev_data *)malloc(sizeof(struct ev_data));
+    memset(m_ev_data, 0, sizeof(struct ev_data));
+    m_ev_data->ev_fd = fd;
+    m_ev_data->cli = cli;
     event.events = EPOLLIN | EPOLLET;
-    event.data.ptr = cli;
+    event.data.ptr = m_ev_data;
     epoll_ctl(kq, EPOLL_CTL_ADD, fd, &event);
 #else
     struct kevent changes[1];
@@ -65,7 +70,12 @@ int regist_sock(int kq, int fd, struct client *cli)
         cli->port = peer_addr.sin_port;
     }
 
-    EV_SET(&changes[0], fd, EVFILT_READ, EV_ADD, 0, 0, cli);
+    struct ev_data *m_ev_data = (struct ev_data *)malloc(sizeof(struct ev_data));
+    memset(m_ev_data, 0, sizeof(struct ev_data));
+    m_ev_data->ev_fd = fd;
+    m_ev_data->cli = cli;
+
+    EV_SET(&changes[0], fd, EVFILT_READ, EV_ADD, 0, 0, m_ev_data);
     int ret = kevent(kq, changes, 1, NULL, 0, NULL);
     if (ret == -1) {
         printf("error in kevent\n");
@@ -75,14 +85,18 @@ int regist_sock(int kq, int fd, struct client *cli)
     return 0;
 }
 
-int clear_client(struct client *cli)
+int clear_client(int kq, struct client *cli)
 {
+    epoll_ctl(kq, EPOLL_CTL_DEL, cli->fd, NULL);
+    epoll_ctl(kq, EPOLL_CTL_DEL, cli->upstream_fd, NULL);
     if (cli->fd) {
         close(cli->fd);
+        cli->fd = -1;
     }
 
     if (cli->upstream_fd) {
         close(cli->upstream_fd);
+        cli->upstream_fd = -1;
     }
 
     free(cli);

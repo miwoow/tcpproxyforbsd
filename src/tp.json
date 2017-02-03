@@ -1,1 +1,1 @@
-{"port":5050, "sport": 1234, "method": "rr", "sips": ["127.0.0.1"]}
+{"port":22, "sport": 22, "method": "rr", "sips": ["127.0.0.1"]}
