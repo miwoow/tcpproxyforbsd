@@ -11,4 +11,4 @@ Using kqueue of Freebsd
 1. make
 
 # Protocol
-1. Once proxy connect to upstream server. Proxy will send client real ip in uint32\_t format to upstream server in network order.
+1. Once proxy connect to upstream server. Proxy will send client real ip in uint32\_t format to upstream server in network byte order.

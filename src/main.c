@@ -49,7 +49,6 @@ int handle_receive(int kq, int sock, int avail_bytes, void *udata)
     if (sock == cli->fd) {
         // data from client
         if (bytes == 0 || bytes == -1) {
-            //close(sock);
             printf("%s:%d: client close or recv failed.\n", inet_ntoa(cli->client_addr), ntohs(cli->port));
             clear_client(cli);
             cli = NULL;
@@ -86,7 +85,7 @@ int handle_receive(int kq, int sock, int avail_bytes, void *udata)
     } else if (sock == cli->upstream_fd) {
         // data from upstream
         if (bytes == 0 || bytes == -1) {
-            printf("%s:%d: upstream close or recv failed.\n", inet_ntoa(cli->client_addr), ntohs(cli->port));
+            printf("%s:%d: upstream close or recv failed.\n", inet_ntoa(cli->upstream_addr), cli->upstream_port);
             clear_client(cli);
             cli = NULL;
             return -1;
@@ -148,6 +147,10 @@ int main(int argc, char *argv[])
 {
     int client_queue = 0;
     int ret = 0;
+
+#ifdef __LINUX__
+    printf("this is linux server.\n");
+#endif
 
     conf_load("./tp.json", &opt);
 

@@ -28,6 +28,8 @@ int balance_sel_server(int kq, struct client *cli)
     }
 
     cli->upstream_fd = sk;
+    cli->upstream_addr.s_addr = opt.sips[selidx];
+    cli->upstream_port = opt.sport;
 
     ret = regist_sock(kq, sk, cli);
     if (ret < 0) {

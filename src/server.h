@@ -21,8 +21,8 @@ struct client {
     struct in_addr client_addr;
     int port;
     int upstream_fd;
-    //struct in_addr upstream_addr;
-    //int upstream_port;
+    struct in_addr upstream_addr;
+    int upstream_port;  // upstream port in host byte order.
 };
 
 
