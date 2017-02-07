@@ -5,7 +5,11 @@
 #include <stdlib.h>
 #include <unistd.h>
 #include <sys/types.h>
+#ifdef __linux__
+#include <sys/epoll.h>
+#else
 #include <sys/event.h>
+#endif
 #include <sys/time.h>
 #include <sys/socket.h>
 #include <fcntl.h>

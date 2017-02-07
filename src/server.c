@@ -31,6 +31,24 @@ int server_start(int *sk, char *ip, int port)
 
 int regist_sock(int kq, int fd, struct client *cli)
 {
+#ifdef __linux__
+    struct epoll_event event = {0, {0}};
+    struct sockaddr_in peer_addr;
+    socklen_t socklen = 0;
+    if (cli == NULL) {
+        cli = malloc(sizeof(struct client));
+        memset(cli, 0, sizeof(struct client));
+        memset(&peer_addr, 0, sizeof(struct sockaddr_in));
+        socklen = sizeof(struct sockaddr_in);
+        getpeername(fd, (struct sockaddr *)&peer_addr, &socklen);
+        cli->fd = fd;
+        cli->client_addr = peer_addr.sin_addr;
+        cli->port = peer_addr.sin_port;
+    }
+    event.events = EPOLLIN | EPOLLET;
+    event.data.ptr = cli;
+    epoll_ctl(kq, EPOLL_CTL_ADD, fd, &event);
+#else
     struct kevent changes[1];
 
     if (cli == NULL) {
@@ -53,6 +71,7 @@ int regist_sock(int kq, int fd, struct client *cli)
         printf("error in kevent\n");
         return -1;
     }
+#endif
     return 0;
 }
 

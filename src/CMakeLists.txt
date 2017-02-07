@@ -1,6 +1,13 @@
 cmake_minimum_required(VERSION 2.8)
 PROJECT(TProxy)
 
+#IF (CMAKE_SYSTEM_NAME MATCHES "Linux")
+#    ADD_DEFINITIONS(-D__LINUX__)
+#ELSEIF (CMAKE_SYSTEM_NAME MATCHES "FreeBSD")
+#    ADD_DEFINITIONS(-D__FreeBSD__)
+#ENDIF()
+
+
 INCLUDE_DIRECTORIES(
 /usr/local/include/
 )
