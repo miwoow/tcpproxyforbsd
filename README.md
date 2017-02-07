@@ -1,6 +1,7 @@
-# TcpProxy On FreeBsd
+# TcpProxy On FreeBsd and linux
 
 Using kqueue of Freebsd
+Using epoll of linux
 
 # Dependment
 1. pkg install json-c-0.12.1
